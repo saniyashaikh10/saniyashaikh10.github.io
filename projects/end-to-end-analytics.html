@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>End-to-End Sales Analytics — Saniya Shaikh</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="case-study.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+</head>
+<body>
+
+<div class="ledger-line"></div>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <a href="../index.html" class="wordmark" style="text-decoration:none;">Saniya Shaikh</a>
+    <nav>
+      <a href="../index.html#projects">← Back to projects</a>
+    </nav>
+  </div>
+</header>
+
+<section class="case-hero">
+  <div class="case-hero-inner">
+    <span class="mono-tag">Case Study 01</span>
+    <h1>End-to-End Sales Analytics</h1>
+    <p class="hero-sub">Furniture looked like a strong revenue category. It wasn't a strong profit category — here's how I found out why, how long it's been happening, and where it's worst.</p>
+    <div class="tag-row">
+      <span class="mono-tag">Python</span>
+      <span class="mono-tag">pandas</span>
+      <span class="mono-tag">EDA</span>
+      <span class="mono-tag">Statistics</span>
+    </div>
+  </div>
+</section>
+
+<article class="case-body">
+
+  <div class="case-section">
+    <span class="case-num">01</span>
+    <div>
+      <h2>Business Problem</h2>
+      <p>Furniture was generating strong revenue, but nobody had actually questioned whether it was <em>profitable</em> revenue. I set out to check — and to find out whether the problem was new, isolated to one region, or something deeper.</p>
+    </div>
+  </div>
+
+  <div class="case-section">
+    <span class="case-num">02</span>
+    <div>
+      <h2>Approach</h2>
+      <ul>
+        <li>Retail sales dataset (Kaggle "Sample Superstore"), ~10,000 orders across 3 years / 16 quarters</li>
+        <li>Grouped and compared sales, profit, and discount rate by product category, sub-category, region, and time period using pandas</li>
+        <li>Quantified the discount-margin relationship with a Pearson correlation, rather than relying on a visual trend alone</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="case-section">
+    <span class="case-num">03</span>
+    <div>
+      <h2>Key Findings</h2>
+      <ul>
+        <li>Furniture generates £742k in sales but only a 2.5% profit margin — far behind Office Supplies (17.0%) and Technology (17.4%)</li>
+        <li>Tables has posted a <strong>negative margin in all 16 quarters</strong> from 2014–2017 — this is a structural issue, not a recent decline</li>
+        <li>Losses are concentrated in the East region (−14.7% margin) and specific states — Pennsylvania, Illinois, and Ohio each lose over 40% margin on Tables and Bookcases</li>
+        <li>The discount-margin relationship is statistically strong: <strong>r = −0.93</strong> within Tables specifically, confirming discounting as the primary driver rather than a coincidence</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="case-section">
+    <span class="case-num">04</span>
+    <div>
+      <h2>Where the losses are</h2>
+      <p class="chart-caption">Profit margin by sub-category — Tables and Bookcases are the only categories consistently in the red.</p>
+      <div class="chart-container">
+        <canvas id="marginChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="case-section">
+    <span class="case-num">05</span>
+    <div>
+      <h2>Has this always been a problem?</h2>
+      <p class="chart-caption">Quarterly margin, 2014–2017. Tables (maroon) never crosses into positive territory — this isn't a new or worsening trend, it's been this way the whole time.</p>
+      <div class="chart-container">
+        <canvas id="trendChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="case-section">
+    <span class="case-num">06</span>
+    <div>
+      <h2>Where are the losses concentrated?</h2>
+      <p class="chart-caption">Margin on Tables + Bookcases by region. Every region loses money, but East is worst by a wide margin.</p>
+      <div class="chart-container">
+        <canvas id="regionChart"></canvas>
+      </div>
+      <p class="chart-note">At the state level, the problem is even sharper: Pennsylvania (−41.3%), Illinois (−44.9%), and Ohio (−40.9%) are the worst-hit — a small, specific list worth investigating first rather than a broad regional rollout.</p>
+    </div>
+  </div>
+
+  <div class="case-section">
+    <span class="case-num">07</span>
+    <div>
+      <h2>Why: discounting eats the margin</h2>
+      <p class="chart-caption">Each bubble is a sub-category — bubble size shows sales volume. Bubbles on the right sit at higher discount levels; the ones below the line are losing money.</p>
+      <div class="chart-container">
+        <canvas id="discountChart"></canvas>
+      </div>
+      <p class="chart-note">The visual pattern holds up statistically: the correlation between discount and margin within Tables alone is <strong>r = −0.93</strong> — a very strong negative relationship, not just a suggestive scatter.</p>
+    </div>
+  </div>
+
+  <div class="case-section">
+    <span class="case-num">08</span>
+    <div>
+      <h2>Recommendation</h2>
+      <p>Cap or restructure discounting specifically on Tables and Bookcases rather than applying blanket furniture discounts, starting with Pennsylvania, Illinois, and Ohio where the losses are most severe. Investigate why reps in these states discount so heavily — competitive pressure, aging stock, or a pricing structure issue — before assuming discounting itself is the problem, since categories like Binders show heavy discounting doesn't automatically erase margin.</p>
+    </div>
+  </div>
+
+  <div class="case-section">
+    <span class="case-num">09</span>
+    <div>
+      <h2>Tools &amp; Code</h2>
+      <p><a href="https://github.com/saniyashaikh10" target="_blank">View the full code on GitHub →</a></p>
+    </div>
+  </div>
+
+</article>
+
+<footer>
+  <p>Saniya Shaikh — <a href="../index.html">Back to portfolio</a></p>
+</footer>
+
+<script>
+const inkSoft = '#4A4F49';
+const line = '#D8D3C3';
+const gold = '#B8863B';
+const maroon = '#7A2436';
+const ink = '#1C2321';
+
+Chart.defaults.font.family = "'IBM Plex Sans', sans-serif";
+Chart.defaults.color = inkSoft;
+
+// ---- Chart 1: Margin by sub-category (horizontal bar) ----
+const marginData = [
+  {label: 'Tables', margin: -8.6},
+  {label: 'Bookcases', margin: -3.0},
+  {label: 'Supplies', margin: -2.5},
+  {label: 'Machines', margin: 1.8},
+  {label: 'Chairs', margin: 8.1},
+  {label: 'Storage', margin: 9.5},
+  {label: 'Phones', margin: 13.5},
+  {label: 'Furnishings', margin: 14.2},
+  {label: 'Binders', margin: 14.9},
+  {label: 'Appliances', margin: 16.9},
+  {label: 'Art', margin: 24.1},
+  {label: 'Accessories', margin: 25.1},
+  {label: 'Fasteners', margin: 31.4},
+  {label: 'Copiers', margin: 37.2},
+  {label: 'Envelopes', margin: 42.3},
+  {label: 'Paper', margin: 43.4},
+  {label: 'Labels', margin: 44.4}
+];
+
+new Chart(document.getElementById('marginChart'), {
+  type: 'bar',
+  data: {
+    labels: marginData.map(d => d.label),
+    datasets: [{
+      data: marginData.map(d => d.margin),
+      backgroundColor: marginData.map(d => d.margin < 0 ? maroon : gold),
+      borderRadius: 3
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true,
+    maintainAspectRatio: false,
+    animation: { duration: 1400, easing: 'easeOutQuart' },
+    plugins: {
+      legend: { display: false },
+      tooltip: { callbacks: { label: (ctx) => `Margin: ${ctx.raw}%` } }
+    },
+    scales: {
+      x: { grid: { color: line }, title: { display: true, text: 'Profit Margin (%)' } },
+      y: { grid: { display: false } }
+    }
+  }
+});
+
+// ---- Chart 2: Quarterly trend line ----
+const quarters = ['2014-Q1','2014-Q2','2014-Q3','2014-Q4','2015-Q1','2015-Q2','2015-Q3','2015-Q4','2016-Q1','2016-Q2','2016-Q3','2016-Q4','2017-Q1','2017-Q2','2017-Q3','2017-Q4'];
+const allMargin =      [5.1,12.9,8.9,12.1,13.5,13.7,12.9,12.8,12.3,12.0,11.0,16.2,19.1,11.6,13.8,9.8];
+const tablesMargin =   [-16.0,-3.8,-4.1,-5.8,-14.1,-27.2,-7.9,-2.4,-11.3,-2.3,-1.9,-6.1,-13.7,-15.2,-11.8,-13.4];
+const bookcasesMargin =[-17.2,-12.5,6.6,0.2,-12.8,-8.5,-9.8,-1.3,-3.0,10.0,-1.2,0.2,5.8,1.0,0.1,-9.1];
+
+new Chart(document.getElementById('trendChart'), {
+  type: 'line',
+  data: {
+    labels: quarters,
+    datasets: [
+      { label: 'Overall', data: allMargin, borderColor: ink, backgroundColor: ink, tension: 0.3, pointRadius: 2 },
+      { label: 'Tables', data: tablesMargin, borderColor: maroon, backgroundColor: maroon, tension: 0.3, pointRadius: 2 },
+      { label: 'Bookcases', data: bookcasesMargin, borderColor: gold, backgroundColor: gold, tension: 0.3, pointRadius: 2 }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    animation: { duration: 1600, easing: 'easeOutQuart' },
+    plugins: {
+      legend: { position: 'top', labels: { boxWidth: 12, padding: 16 } }
+    },
+    scales: {
+      x: { grid: { display: false }, ticks: { maxRotation: 60, minRotation: 60, font: { size: 9 } } },
+      y: { grid: { color: line }, title: { display: true, text: 'Margin (%)' } }
+    }
+  }
+});
+
+// ---- Chart 3: Region margin (Tables + Bookcases only) ----
+const regionData = [
+  {label: 'East', margin: -14.7},
+  {label: 'Central', margin: -8.8},
+  {label: 'South', margin: -6.0},
+  {label: 'West', margin: -0.1}
+];
+
+new Chart(document.getElementById('regionChart'), {
+  type: 'bar',
+  data: {
+    labels: regionData.map(d => d.label),
+    datasets: [{
+      data: regionData.map(d => d.margin),
+      backgroundColor: maroon,
+      borderRadius: 3,
+      barThickness: 50
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    animation: { duration: 1400, easing: 'easeOutQuart' },
+    plugins: {
+      legend: { display: false },
+      tooltip: { callbacks: { label: (ctx) => `Margin: ${ctx.raw}%` } }
+    },
+    scales: {
+      x: { grid: { display: false } },
+      y: { grid: { color: line }, title: { display: true, text: 'Margin on Tables + Bookcases (%)' } }
+    }
+  }
+});
+
+// ---- Chart 4: Discount vs Margin (bubble) ----
+const bubbleData = [
+  {label: 'Tables', x: 26.1, y: -8.6, sales: 206966},
+  {label: 'Bookcases', x: 21.1, y: -3.0, sales: 114880},
+  {label: 'Supplies', x: 7.7, y: -2.5, sales: 46674},
+  {label: 'Machines', x: 30.6, y: 1.8, sales: 189239},
+  {label: 'Chairs', x: 17.0, y: 8.1, sales: 328449},
+  {label: 'Storage', x: 7.5, y: 9.5, sales: 223844},
+  {label: 'Phones', x: 15.5, y: 13.5, sales: 330007},
+  {label: 'Furnishings', x: 13.8, y: 14.2, sales: 91705},
+  {label: 'Binders', x: 37.2, y: 14.9, sales: 203413},
+  {label: 'Appliances', x: 16.7, y: 16.9, sales: 107532},
+  {label: 'Art', x: 7.5, y: 24.1, sales: 27119},
+  {label: 'Accessories', x: 7.8, y: 25.1, sales: 167380},
+  {label: 'Fasteners', x: 8.2, y: 31.4, sales: 3024},
+  {label: 'Copiers', x: 16.2, y: 37.2, sales: 149528},
+  {label: 'Envelopes', x: 8.0, y: 42.3, sales: 16476},
+  {label: 'Paper', x: 7.5, y: 43.4, sales: 78479},
+  {label: 'Labels', x: 6.9, y: 44.4, sales: 12486}
+];
+
+new Chart(document.getElementById('discountChart'), {
+  type: 'bubble',
+  data: {
+    datasets: [{
+      data: bubbleData.map(d => ({x: d.x, y: d.y, r: Math.sqrt(d.sales) / 12})),
+      backgroundColor: bubbleData.map(d => d.y < 0 ? 'rgba(122,36,54,0.75)' : 'rgba(184,134,59,0.75)'),
+      borderColor: bubbleData.map(d => d.y < 0 ? maroon : gold),
+      borderWidth: 1.5
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    animation: { duration: 1400, easing: 'easeOutQuart' },
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: (ctx) => {
+            const d = bubbleData[ctx.dataIndex];
+            return `${d.label}: ${d.x}% discount, ${d.y}% margin`;
+          }
+        }
+      }
+    },
+    scales: {
+      x: { grid: { color: line }, title: { display: true, text: 'Average Discount (%)' } },
+      y: { grid: { color: line }, title: { display: true, text: 'Profit Margin (%)' } }
+    }
+  }
+});
+</script>
+
+</body>
+</html>
