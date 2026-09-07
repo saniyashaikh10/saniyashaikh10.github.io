@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SQL Data Exploration — Saniya Shaikh</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="case-study.css">
+</head>
+<body>
+
+<div class="ledger-line"></div>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <a href="../index.html" class="wordmark" style="text-decoration:none;">Saniya Shaikh</a>
+    <nav>
+      <a href="../index.html#projects">← Back to projects</a>
+    </nav>
+  </div>
+</header>
+
+<section class="case-hero">
+  <div class="case-hero-inner">
+    <span class="mono-tag">Case Study 02</span>
+    <h1>SQL Data Exploration</h1>
+    <p class="hero-sub">The KPIs everyone quotes in meetings, calculated properly — joins, CTEs, and window functions doing the work spreadsheets can't.</p>
+    <div class="tag-row">
+      <span class="mono-tag">SQL</span>
+      <span class="mono-tag">SQLite</span>
+      <span class="mono-tag">KPIs</span>
+    </div>
+  </div>
+</section>
+
+<article class="case-body">
+
+  <div class="case-section">
+    <span class="case-num">01</span>
+    <div>
+      <h2>Business Problem</h2>
+      <p>Most "SQL practice" is isolated exercises against a single table. Real business databases are relational — customer, product, and order data live in separate tables that have to be joined correctly to answer even simple questions. I built a proper relational database from the same retail dataset used in Project 01, and queried it the way an analyst actually would.</p>
+    </div>
+  </div>
+
+  <div class="case-section">
+    <span class="case-num">02</span>
+    <div>
+      <h2>Approach</h2>
+      <ul>
+        <li>Normalized a flat 10,000-row CSV into four relational tables — <code>customers</code>, <code>products</code>, <code>orders</code>, <code>order_items</code> — connected by ID keys, mirroring a real business schema</li>
+        <li>Loaded into SQLite and queried directly with SQL via Python</li>
+        <li>Progressed from multi-table joins → CTEs → window functions, each answering a genuine business question</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="case-section">
+    <span class="case-num">03</span>
+    <div>
+      <h2>Multi-Table Join: Top Customers by Profit</h2>
+      <p>Customer names live in one table, profit figures in another. A three-table join (<code>order_items → orders → customers</code>) connects them.</p>
+      <pre><code>SELECT c."Customer Name", c.Segment,
+       ROUND(SUM(oi.Profit), 2) AS total_profit,
+       COUNT(DISTINCT oi."Order ID") AS num_orders
+FROM order_items oi
+JOIN orders o ON oi."Order ID" = o."Order ID"
+JOIN customers c ON o."Customer ID" = c."Customer ID"
+GROUP BY c."Customer ID"
+ORDER BY total_profit DESC
+LIMIT 5</code></pre>
+      <div class="result-table">
+        <table>
+          <thead><tr><th>Customer</th><th>Segment</th><th>Profit</th><th>Orders</th></tr></thead>
+          <tbody>
+            <tr><td>Tamara Chand</td><td>Corporate</td><td>£8,981.32</td><td>5</td></tr>
+            <tr><td>Raymond Buch</td><td>Consumer</td><td>£6,976.10</td><td>6</td></tr>
+            <tr><td>Sanjit Chand</td><td>Consumer</td><td>£5,757.41</td><td>9</td></tr>
+            <tr><td>Hunter Lopez</td><td>Consumer</td><td>£5,622.43</td><td>6</td></tr>
+            <tr><td>Adrian Barton</td><td>Consumer</td><td>£5,444.81</td><td>10</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="chart-note">Tamara Chand stands out — nearly double the next customer's profit from just 5 orders (~£1,800 profit per order, well above anyone else on the list).</p>
+    </div>
+  </div>
+
+  <div class="case-section">
+    <span class="case-num">04</span>
+    <div>
+      <h2>CTE + CASE: Customer Value Tiers</h2>
+      <p>A CTE isolates the join/aggregation logic, so the outer query can cleanly apply business rules — here, bucketing customers into value tiers.</p>
+      <pre><code>WITH customer_totals AS (
+    SELECT c."Customer ID", c."Customer Name", c.Segment,
+           SUM(oi.Profit) AS total_profit
+    FROM order_items oi
+    JOIN orders o ON oi."Order ID" = o."Order ID"
+    JOIN customers c ON o."Customer ID" = c."Customer ID"
+    GROUP BY c."Customer ID"
+)
+SELECT "Customer Name", Segment, ROUND(total_profit, 2) AS total_profit,
+    CASE
+        WHEN total_profit > 5000 THEN 'High Value'
+        WHEN total_profit > 1000 THEN 'Medium Value'
+        ELSE 'Low Value'
+    END AS customer_tier
+FROM customer_totals
+ORDER BY total_profit DESC</code></pre>
+      <p class="chart-note">This pattern — CTE to calculate, outer query to classify — is one of the most common real-world SQL structures, and directly answers a typical stakeholder ask: "who are our high-value customers?"</p>
+    </div>
+  </div>
+
+  <div class="case-section">
+    <span class="case-num">05</span>
+    <div>
+      <h2>Window Function: Top 3 Products per Category</h2>
+      <p><code>RANK() OVER (PARTITION BY ...)</code> ranks rows within groups without collapsing them — impossible to do cleanly with <code>GROUP BY</code> alone.</p>
+      <pre><code>WITH product_profit AS (
+    SELECT p.Category, p."Product Name", SUM(oi.Profit) AS total_profit
+    FROM order_items oi
+    JOIN products p ON oi."Product ID" = p."Product ID"
+    GROUP BY p."Product ID"
+),
+ranked AS (
+    SELECT Category, "Product Name", ROUND(total_profit, 2) AS total_profit,
+           RANK() OVER (PARTITION BY Category ORDER BY total_profit DESC) AS rank_in_category
+    FROM product_profit
+)
+SELECT * FROM ranked WHERE rank_in_category <= 3
+ORDER BY Category, rank_in_category</code></pre>
+      <div class="result-table">
+        <table>
+          <thead><tr><th>Category</th><th>Product</th><th>Profit</th><th>Rank</th></tr></thead>
+          <tbody>
+            <tr><td>Technology</td><td>Canon imageCLASS 2200 Copier</td><td>£25,199.93</td><td>1</td></tr>
+            <tr><td>Technology</td><td>HP LaserJet 3310 Copier</td><td>£6,983.88</td><td>2</td></tr>
+            <tr><td>Office Supplies</td><td>Fellowes PB500 Comb Binder</td><td>£7,753.04</td><td>1</td></tr>
+            <tr><td>Furniture</td><td>Hon Deluxe Stacking Chairs</td><td>£1,927.44</td><td>1</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="case-section">
+    <span class="case-num">06</span>
+    <div>
+      <h2>Window Function: Running Total</h2>
+      <p>A running total — one of the most common real interview and take-home SQL tasks — using a window function with no <code>PARTITION BY</code>, so it accumulates across every row in date order.</p>
+      <div class="chart-container">
+        <canvas id="runningTotalChart"></canvas>
+      </div>
+      <p class="chart-note">Sales grew consistently year over year, reaching £2.3M cumulative by the end of 2017 — Q4 (Oct–Dec) is consistently the strongest period each year, a useful seasonal signal for planning.</p>
+    </div>
+  </div>
+
+  <div class="case-section">
+    <span class="case-num">07</span>
+    <div>
+      <h2>Tools &amp; Code</h2>
+      <p><a href="https://github.com/saniyashaikh10/sql-superstore-exploration" target="_blank">View the full notebook and database on GitHub →</a></p>
+    </div>
+  </div>
+
+</article>
+
+<footer>
+  <p>Saniya Shaikh — <a href="../index.html">Back to portfolio</a></p>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script>
+const inkSoft = '#4A4F49';
+const line = '#D8D3C3';
+const gold = '#B8863B';
+const maroon = '#7A2436';
+
+Chart.defaults.font.family = "'IBM Plex Sans', sans-serif";
+Chart.defaults.color = inkSoft;
+
+const months = ['2014-01','2014-02','2014-03','2014-04','2014-05','2014-06','2014-07','2014-08','2014-09','2014-10','2014-11','2014-12','2015-01','2015-02','2015-03','2015-04','2015-05','2015-06','2015-07','2015-08','2015-09','2015-10','2015-11','2015-12','2016-01','2016-02','2016-03','2016-04','2016-05','2016-06','2016-07','2016-08','2016-09','2016-10','2016-11','2016-12','2017-01','2017-02','2017-03','2017-04','2017-05','2017-06','2017-07','2017-08','2017-09','2017-10','2017-11','2017-12'];
+const runningTotal = [14236.90,18756.79,74447.80,102743.14,126391.43,160986.56,194932.95,222842.42,304619.77,336073.16,414701.88,484247.50,502421.57,514372.98,553099.24,587294.45,617426.13,642223.42,670988.75,707887.08,772483.00,803887.92,879860.49,954780.01,973322.50,996301.31,1048017.19,1086767.23,1143754.96,1184099.49,1223361.45,1254476.83,1327886.85,1387574.60,1466986.56,1563985.61,1607956.98,1628258.11,1687130.47,1723652.00,1767913.11,1820894.84,1866159.25,1929280.14,2017146.79,2094923.72,2213371.54,2297200.86];
+
+new Chart(document.getElementById('runningTotalChart'), {
+  type: 'line',
+  data: {
+    labels: months,
+    datasets: [{
+      label: 'Cumulative Sales (£)',
+      data: runningTotal,
+      borderColor: gold,
+      backgroundColor: 'rgba(184,134,59,0.12)',
+      fill: true,
+      tension: 0.25,
+      pointRadius: 0,
+      borderWidth: 2
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    animation: { duration: 1600, easing: 'easeOutQuart' },
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { grid: { display: false }, ticks: { maxTicksLimit: 12, font: { size: 9 } } },
+      y: { grid: { color: line }, title: { display: true, text: 'Cumulative Sales (£)' } }
+    }
+  }
+});
+</script>
+
+</body>
+</html>
