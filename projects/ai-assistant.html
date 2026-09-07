@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Business Analyst Assistant — Saniya Shaikh</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="case-study.css">
+</head>
+<body>
+
+<div class="ledger-line"></div>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <a href="../index.html" class="wordmark" style="text-decoration:none;">Saniya Shaikh</a>
+    <nav>
+      <a href="../index.html#projects">← Back to projects</a>
+    </nav>
+  </div>
+</header>
+
+<section class="case-hero">
+  <div class="case-hero-inner">
+    <span class="mono-tag">Case Study 03</span>
+    <h1>AI Business Analyst Assistant</h1>
+    <p class="hero-sub">Ask it "why did revenue drop in March?" in plain English. It writes the SQL, pulls the data, and gives you the answer — no analyst required. And when it got confused, I found out why.</p>
+    <div class="tag-row">
+      <span class="mono-tag">Python</span>
+      <span class="mono-tag">SQLite</span>
+      <span class="mono-tag">LLM API</span>
+    </div>
+  </div>
+</section>
+
+<article class="case-body">
+
+  <div class="case-section">
+    <span class="case-num">01</span>
+    <div>
+      <h2>Business Problem</h2>
+      <p>Analysts spend a lot of time answering the same kinds of repetitive business questions — "why did X change," "which category is underperforming." I built a working prototype of a tool that answers these directly: a business user types a question in plain English, and the system writes the SQL, runs it against a real database, and returns a written insight, not just a number.</p>
+    </div>
+  </div>
+
+  <div class="case-section">
+    <span class="case-num">02</span>
+    <div>
+      <h2>Architecture</h2>
+      <div class="arch-flow">
+        <div class="arch-step"><span class="mono-tag">1</span> Plain-English question</div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-step"><span class="mono-tag">2</span> LLM generates SQL</div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-step"><span class="mono-tag">3</span> Query runs on real DB</div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-step"><span class="mono-tag">4</span> LLM writes the insight</div>
+      </div>
+      <p>Built on the same normalized Superstore database from Project 02, using the Groq API (an open-source LLM) for both the SQL generation and insight-writing steps.</p>
+    </div>
+  </div>
+
+  <div class="case-section">
+    <span class="case-num">03</span>
+    <div>
+      <h2>It works — here's a real example</h2>
+      <p class="chart-caption">Question asked in plain English, with zero manual SQL:</p>
+      <pre><code>"Why might Furniture be underperforming compared to other categories?"</code></pre>
+      <p class="chart-caption">The system automatically generated and ran this:</p>
+      <pre><code>SELECT p."Category",
+       COUNT(DISTINCT o."Order ID") AS "Orders Count",
+       SUM(oi."Sales") AS "Total Sales",
+       SUM(oi."Profit") AS "Total Profit",
+       ROUND(AVG(oi."Discount") * 100, 2) AS "Avg Discount (%)",
+       ROUND(AVG(oi."Profit" / NULLIF(oi."Sales", 0)) * 100, 2) AS "Avg Profit Margin (%)"
+FROM order_items AS oi
+JOIN orders AS o ON oi."Order ID" = o."Order ID"
+JOIN products AS p ON oi."Product ID" = p."Product ID"
+GROUP BY p."Category"
+ORDER BY "Total Sales" DESC;</code></pre>
+      <p class="chart-caption">And returned this written insight:</p>
+      <div class="ai-answer">
+        Furniture has 1,764 orders but generates only $741,999 in sales versus $836,154 for Technology and $719,047 for Office Supplies, despite a higher order volume. Its profit margin is only 3.88% compared to 15.61% for Technology and 13.80% for Office Supplies, and the average discount is 17.39%, the highest of the three categories. The combination of steep discounts and low margin is driving the underperformance.
+      </div>
+      <p class="chart-note">This matches the independent finding from Project 01's manual analysis — the AI arrived at the same conclusion (discounting is driving Furniture's underperformance) with no prior knowledge of that earlier work.</p>
+    </div>
+  </div>
+
+  <div class="case-section">
+    <span class="case-num">04</span>
+    <div>
+      <h2>Where it broke — and why that matters more</h2>
+      <p>Testing isn't just about showing what works. I asked a deliberately vague question and it revealed a real limitation:</p>
+
+      <div class="compare-grid">
+        <div class="compare-card compare-bad">
+          <span class="mono-tag">Vague question</span>
+          <p class="compare-q">"Which region should we focus on to improve profit?"</p>
+          <p class="compare-a"><strong>West</strong> — the AI found the <em>highest</em>-profit region and wrote a confident justification for investing there.</p>
+        </div>
+        <div class="compare-card compare-good">
+          <span class="mono-tag">Precise question</span>
+          <p class="compare-q">"Which region has the lowest profit margin and needs improvement?"</p>
+          <p class="compare-a"><strong>South</strong> (7.51% margin) — correctly identifies the actual weakest region.</p>
+        </div>
+      </div>
+
+      <p class="chart-note"><strong>The takeaway:</strong> the AI answered a technically-valid but logically-backwards question fluently and confidently — it didn't know it had misunderstood. This is a real, known limitation of LLM-based tools: they optimize for a plausible-sounding answer, not for catching ambiguity in the question itself. A production version of this tool would need guardrails — clarifying questions, or a human review step — before it could be trusted unsupervised.</p>
+    </div>
+  </div>
+
+  <div class="case-section">
+    <span class="case-num">05</span>
+    <div>
+      <h2>What I'd do next</h2>
+      <ul>
+        <li>Add a clarification step: if a question could be interpreted multiple ways, have the AI ask which one before running the query</li>
+        <li>Validate generated SQL before execution (check it only reads data, matches the real schema, and isn't malformed)</li>
+        <li>Wrap this in a simple chat interface instead of a notebook, so a non-technical user could actually use it</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="case-section">
+    <span class="case-num">06</span>
+    <div>
+      <h2>Tools &amp; Code</h2>
+      <p><a href="https://github.com/saniyashaikh10/ai-business-analyst-assistant" target="_blank">View the full notebook on GitHub →</a></p>
+    </div>
+  </div>
+
+</article>
+
+<footer>
+  <p>Saniya Shaikh — <a href="../index.html">Back to portfolio</a></p>
+</footer>
+
+</body>
+</html>
